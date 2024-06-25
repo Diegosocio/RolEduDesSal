@@ -1,0 +1,136 @@
+---
+title: "Rol de la educacion en la desigualdad salarial"
+author: "Diego Meza Avila"
+format: revealjs
+editor: visual
+bibliography: "Desigualdadsalarialydesigualdadeducacional.bib"
+link-citations: True
+---
+
+## Introducción
+
+“existe discriminación en el mercado de trabajo cuando un grupo de individuos recibe injustificadamente y de manera independiente a sus habilidades, un trato desfavorable que afecta su participación y desarrollo dentro de este mercado.” ([@de_la_luz_tovar_alisis_2023]).
+
+## Pregunta de investigación
+
+¿(Cuánto) afecta el tipo de la educación superior en Chile al nivel de satisfacción salarial y a la percepción de desigualdad entre los egresados?
+
+## Variables a usar
+
+La e8: ¿en qué tipo de institución realizo su educación superior? = Tipo de educación
+
+e6a: ¿Cuál es el nivel educacional al que asiste o el más alto al cual asistió? = Alcance educacional
+
+y
+
+y3ap: ¿con que frecuencia recibe ingresos por horas extras?, = Insatisfacción salarial 1
+
+y3fp: ¿con que frecuencia recibe ingresos por otros ingresos? = Insatisfacción salarial 2
+
+## Variables
+
+```{r}
+pacman::p_load(dplyr, sjmisc, car, sjlabelled, stargazer, haven, sjPlot, ggplot2, psych, kableExtra, corrplot)
+load("C:/Users/Regalo/OneDrive/Escritorio/Entrega 4/Entrega-4/IPO/Processing/Proc_data.RData")
+proc_data %>% dplyr::select(`Tipo de educacion`) %>% 
+  sjPlot::plot_stackfrq()+
+  theme(legend.position = "bottom")
+```
+
+## Variables
+
+```{r}
+proc_data %>% dplyr::select(`Alcance educacional`) %>% 
+  sjPlot::plot_stackfrq()+
+  theme(legend.position = "bottom")
+```
+
+## Variables
+
+```{r}
+proc_data %>% dplyr::select(`Insatisfaccion salarial`) %>% 
+  sjPlot::plot_stackfrq()+
+  theme(legend.position = "bottom")
+```
+
+## Variables
+
+```{r}
+proc_data %>% dplyr::select(`Insatisfaccion salarial 2`) %>% 
+  sjPlot::plot_stackfrq()+
+  theme(legend.position = "bottom")
+```
+
+## Correlacion
+
+```{r}
+M <- cor(proc_data, use = "complete.obs")
+corrplot.mixed(M)
+corrplot::corrplot(M,
+  method = "color", # Cambia los círculos por color completo de cada cuadrante
+  addCoef.col = "red", # Color de los coeficientes
+  type = "upper", # Deja solo las correlaciones de arriba
+  tl.col = "black", # COlor letras, rojo por defecto
+  na.label = "-")
+```
+
+## Escala
+
+```{r}
+psych::alpha(dplyr::select(proc_data, `Tipo de educacion`, `Alcance educacional`, `Insatisfaccion salarial`, `Insatisfaccion salarial 2`))
+
+
+
+
+mean(proc_data$`Tipo de educacion`); mean(proc_data$`Alcance educacional`); mean(proc_data$`Desigualdad salarial`)
+
+mean(proc_data$`Tipo de educacion`, na.rm = TRUE); mean(proc_data$`Alcance educacional`, na.rm = TRUE); mean(proc_data$`Desigualdad salarial`, na.rm = TRUE)
+
+proc_data <- proc_data %>% 
+  rowwise() %>% 
+  mutate("Desigualdad salarial" = sum(`Insatisfaccion salarial`, `Insatisfaccion salarial 2`))
+
+proc_data <- proc_data %>% 
+  mutate("Desigualdad salarial" = `Insatisfaccion salarial` + `Insatisfaccion salarial 2`)
+summary("Desigualdad salarial")
+proc_data <- proc_data %>% 
+  mutate("Desigualdad salarial" = as.numeric(`Insatisfaccion salarial`) + as.numeric(`Insatisfaccion salarial 2`))
+summary("Desigualdad salarial")
+
+class(proc_data$"Insatisfaccion salarial")
+class(proc_data$"Insatisfaccion salarial 2")
+
+summary(proc_data$`Desigualdad salarial`)
+```
+
+## Correlacion 2
+
+```{r}
+prod_data <- proc_data %>% select(`Desigualdad salarial`, `Alcance educacional`, `Tipo de educacion`)
+M <- cor(prod_data, use = "complete.obs") 
+diag(M) = NA 
+rownames(M) <- c("A. Desigualdad salarial",
+                         "B. Alcance educacional",
+                         "C. Tipo de educacion")
+colnames(M) <-c("(A)", "(B)","(C)")
+corrplot::corrplot(M,
+  method = "color", addCoef.col = "red", type = "upper", tl.col = "black",na.label = "-")
+```
+
+## Regresion
+
+![](images/clipboard-965201462.png)
+
+## Conclusion
+
+::: columns
+::: {.column width="50%"}
+![](images/clipboard-3388413559.png)
+:::
+
+::: {.column width="50%"}
+![](images/clipboard-2319814775.png)
+:::
+:::
+
+## Fin
